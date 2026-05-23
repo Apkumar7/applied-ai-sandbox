@@ -30,7 +30,7 @@ def create_app() -> Flask:
             if title_error or body_error:
                 return render_template("new_note.html", title=title, body=body,
                                        title_error=title_error, body_error=body_error)
-            app.notes.append({"title": title, "body": body})
+            app.notes.append({"title": title, "body": body, "tags": []})
             return redirect(url_for("home"))
         return render_template("new_note.html")
 
