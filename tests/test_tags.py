@@ -14,3 +14,21 @@ def test_old_note_without_tags_key_is_safe(app):
     app.notes.append({"title": "old", "body": "legacy"})
     note = app.notes[0]
     assert note.get("tags", []) == []
+
+
+def test_tags_comma_split(client, app):
+    app.notes.clear()
+    client.post("/notes/new", data={"title": "T", "body": "B", "tags": "work, urgent"})
+    assert app.notes[0]["tags"] == ["work", "urgent"]
+
+
+def test_tags_whitespace_and_empty_entries_ignored(client, app):
+    app.notes.clear()
+    client.post("/notes/new", data={"title": "T", "body": "B", "tags": " work , urgent  , ,"})
+    assert app.notes[0]["tags"] == ["work", "urgent"]
+
+
+def test_tags_empty_string_gives_empty_list(client, app):
+    app.notes.clear()
+    client.post("/notes/new", data={"title": "T", "body": "B", "tags": ""})
+    assert app.notes[0]["tags"] == []
