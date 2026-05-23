@@ -70,6 +70,19 @@
       cursor: pointer;
       transition: background 0.2s, color 0.2s, border-color 0.2s;
     }
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1rem 0 1.25rem; }
+    .filter-bar a {
+      padding: 0.3rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+      text-decoration: none; background: var(--toggle-bg); color: var(--toggle-text);
+      border: 1px solid var(--border);
+    }
+    .filter-bar a.active { background: var(--btn-bg); color: var(--btn-text); border-color: var(--btn-bg); }
+    .tags  { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
+    .chip  {
+      font-size: 0.75rem; padding: 0.15rem 0.6rem; border-radius: 12px;
+      background: var(--toggle-bg); color: var(--toggle-text);
+      border: 1px solid var(--border);
+    }
   </style>
   <script>
     // Runs before paint — no flash of wrong theme.
@@ -86,12 +99,28 @@
 
   <a class="btn" href="{{ url_for('new_note') }}">+ New note</a>
 
+  {% if all_tags %}
+  <div class="filter-bar">
+    <a class="filter{% if not active_tag %} active{% endif %}" href="{{ url_for('home') }}">All</a>
+    {% for t in all_tags %}
+      <a class="filter{% if active_tag == t %} active{% endif %}" href="{{ url_for('home', tag=t) }}">{{ t }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   <h2 style="margin-top: 2rem;">Your notes ({{ notes|length }})</h2>
   {% if notes %}
     {% for note in notes %}
       <div class="note">
         <h3>{{ note.title }}</h3>
         <p>{{ note.body }}</p>
+        {% if note.get('tags') %}
+          <div class="tags">
+            {% for t in note.tags %}
+              <span class="chip">{{ t }}</span>
+            {% endfor %}
+          </div>
+        {% endif %}
       </div>
     {% endfor %}
   {% else %}

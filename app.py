@@ -18,20 +18,26 @@ def create_app() -> Flask:
 
     @app.route("/")
     def home():
-        return render_template("home.html", notes=app.notes)
+        tag = request.args.get("tag", "").strip().lower()
+        notes = app.notes if not tag else [
+            n for n in app.notes if tag in n.get("tags", [])
+        ]
+        all_tags = sorted({t for n in app.notes for t in n.get("tags", [])})
+        return render_template("home.html", notes=notes, all_tags=all_tags, active_tag=tag)
 
     @app.route("/notes/new", methods=["GET", "POST"])
     def new_note():
         if request.method == "POST":
-            title = (request.form.get("title") or "").strip()
-            body = (request.form.get("body") or "").strip()
+            title    = (request.form.get("title") or "").strip()
+            body     = (request.form.get("body")  or "").strip()
+            raw_tags = (request.form.get("tags")  or "").strip()
             title_error = "Title is required" if not title else None
-            body_error = "Body is required" if not body else None
+            body_error  = "Body is required"  if not body  else None
             if title_error or body_error:
                 return render_template("new_note.html", title=title, body=body,
+                                       tags=raw_tags,
                                        title_error=title_error, body_error=body_error)
-            raw_tags = (request.form.get("tags") or "").strip()
-            tags = [t.strip() for t in raw_tags.split(",") if t.strip()]
+            tags = [t.strip().lower() for t in raw_tags.split(",") if t.strip()]
             app.notes.append({"title": title, "body": body, "tags": tags})
             return redirect(url_for("home"))
         return render_template("new_note.html")
